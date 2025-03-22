@@ -34,6 +34,8 @@
     margin-left: var(--sidebar-width);
     padding: 20px;
     transition: margin-left var(--transition-speed) ease;
+    width: calc(100% - var(--sidebar-width));
+    box-sizing: border-box;
 }
 
 .main-content.expanded {
