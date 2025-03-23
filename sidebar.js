@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Check if user is logged in (you can replace this with your actual auth check)
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    document.getElementById('userLoggedIn').style.display = isLoggedIn ? 'flex' : 'none';
-    document.getElementById('userLoggedOut').style.display = isLoggedIn ? 'none' : 'flex';
+    // const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    // document.getElementById('userLoggedIn').style.display = isLoggedIn ? 'flex' : 'none';
+    // document.getElementById('userLoggedOut').style.display = isLoggedIn ? 'none' : 'flex';
 });

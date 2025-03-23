@@ -6,119 +6,106 @@
     <title>Collaboration Page - Manager</title>
     <link rel="stylesheet" href="C_Manager.css">
     <link rel="stylesheet" href="sidebar.css">
+    <link rel="stylesheet" href="team.css">
 </head>
 <body>
+    <?php include 'sidebar.php'; ?>
     
-    <!-- Sidebar navigation -->
-    <div class="sidebar" id="sidebar">
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <span class="sidebar-logo-icon">🚀</span>
-                <span class="sidebar-logo-text">Productivity Hub</span>
+    <!-- Main content -->
+    <div class="main-content" id="mainContent">
+        <!-- Collaboration header -->
+        <div class="collab-header">
+            <h1 id="current-collab-title"># Python Project</h1>
+            
+            <div class="collab-tabs">
+                <button class="tablinks active" onclick="openTab(event, 'Post')">
+                    <span class="tab-icon">💬</span> Post
+                </button>
+                <button class="tablinks" onclick="openTab(event, 'TaskManagement')">
+                    <span class="tab-icon">📋</span> Team Management
+                </button>
             </div>
-            <button class="sidebar-toggle" id="sidebarToggle">◀</button>
-        </div>
-        
-        <ul class="sidebar-menu">
-            <li class="sidebar-menu-item">
-                <a href="dashboard.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📊</span>
-                    <span class="sidebar-menu-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="GoalTracking.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">🎯</span>
-                    <span class="sidebar-menu-text">Goal Tracking</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="Workspace.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📝</span>
-                    <span class="sidebar-menu-text">Task Workspace</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="Time Tracker.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">⏱️</span>
-                    <span class="sidebar-menu-text">Time Tracker</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="ProductivityAnalysis.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📈</span>
-                    <span class="sidebar-menu-text">Analytics</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="C_Manager.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">👥</span>
-                    <span class="sidebar-menu-text">Collaboration</span>
-                </a>
-            </li>
-        </ul>
-        
-        <!-- User profile section (for logged in users) -->
-        <div class="sidebar-user" id="userLoggedIn" style="display: none;">
-            <div class="user-avatar">JS</div>
-            <div class="user-info">
-                <div class="user-name">John Smith</div>
-                <div class="user-status">Premium Member</div>
-                <a href="Login.php" class="user-logout">Logout</a>
+            
+            <div class="collab-actions">
+                <button class="action-btn" title="Share document">📄</button>
+                <button class="action-btn" title="Start meeting">👥</button>
+                <button class="action-btn" title="Add member">👤</button>
             </div>
         </div>
-        
-        <!-- Login button (for guests) -->
-        <div class="sidebar-user" id="userLoggedOut">
-            <a href="Login.php" class="login-btn">
-                <span class="login-icon">🔑</span>
-                <span class="login-text">Login / Sign Up</span>
-            </a>
+
+        <!-- Post Section with Chatbox -->
+        <div id="Post" class="tabcontent" style="display: block;">
+            <div class="chat-collab">
+                <!-- Chat/Comment area with messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Messages will be loaded dynamically -->
+                </div>
+                
+                <!-- Compose new message area -->
+                <div class="compose-area">
+                    <div class="message-input-container">
+                        <input type="text" class="message-input" id="chatInput" placeholder="Comment...">
+                        <div class="message-actions">
+                            <button class="attachment-icon" onclick="document.getElementById('fileUpload').click()">📎</button>
+                            <button class="send-icon" onclick="sendMessage()">➤</button>
+                        </div>
+                    </div>
+                    <!-- Hidden file input -->
+                    <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload()">
+                    <!-- Attachment preview container -->
+                    <div id="attachmentsContainer" class="attachments-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Task Management Section -->
+        <div id="TaskManagement" class="tabcontent" style="display: none;">
+            <div class="wrapper">
+                <h2>Task Management - Manager</h2>
+
+                <input type="text" id="taskName" placeholder="Task Name">
+                <input type="text" id="ownerName" placeholder="Owner Name">
+    
+                <select id="taskPriority">
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+    
+                <input type="datetime-local" id="dueDate">
+                <button id="assignTask">Assign Task</button>
+    
+                <table id="taskTable">
+                    <tr>
+                        <th>Task</th>
+                        <th>Owner</th>
+                        <th>Priority</th>
+                        <th>Progress</th>
+                        <th>Due Date</th>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="main-content" id="mainContent">
-        <div class="container">
-            <h2>Collaboration Page - Manager</h2>
-
-            <div class="section">
-                <h3>Discussion & File Sharing</h3>
-                <textarea id="commentInput" placeholder="Write a comment..."></textarea>
-                <button onclick="addComment()">Post Comment</button>
-                <ul class="comment-list" id="commentList"></ul>
-
-                <input type="file" id="fileUpload">
-                <button onclick="uploadFile()">Upload File</button>
-                <ul class="file-list" id="fileList"></ul>
+    <!-- Collaboration Selector Modal -->
+    <div id="collabModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Select Collaboration</h2>
+            <div class="collab-list">
+                <!-- Collaborations will be loaded dynamically -->
+                <div class="collab-item add-collab">
+                    <span class="collab-icon">+</span>
+                    <span class="collab-name">Create New Collaboration</span>
+                </div>
             </div>
-
-            <div class="section">
-                <h3>Task Management</h3>
-                <input type="text" id="taskInput" placeholder="Enter a task">
-                <button onclick="addTask()">Assign Task</button>
-                <ul class="task-list" id="taskList"></ul>
-            </div>
-
-            <div class="section">
-                <h3>Team Members</h3>
-                <input type="text" id="memberInput" placeholder="Enter member name">
-                <button onclick="addMember()">Add Member</button>
-                <ul class="member-list" id="memberList"></ul>
-            </div>
-
-            <div class="section">
-                <h3>Schedule Online Meeting</h3>
-                <input type="datetime-local" id="meetingTime">
-                <button onclick="scheduleMeeting()">Schedule Meeting</button>
-                <p id="meetingScheduled"></p>
-            </div>
-
         </div>
     </div>
 
     <script src="C_Manager.js"></script>
+    <script src="team.js"></script>
     <script src="sidebar.js"></script>
-
 </body>
 </html>

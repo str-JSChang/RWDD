@@ -1,11 +1,11 @@
 <!-- debugging -->
 <?php
 session_start();
-if(isset($_SESSION['loggedin'])) {
-    echo "Logged in as: " . $_SESSION['username'] . "<br>";
-    echo "User ID: " . $_SESSION['user_id'] . "<br>";
-}
-?>
+// if(isset($_SESSION['loggedin'])) {
+//     echo "Logged in as: " . $_SESSION['username'] . "<br>";
+//     echo "User ID: " . $_SESSION['user_id'] . "<br>";
+// }
+?> 
 
 
 <!DOCTYPE html>
@@ -251,6 +251,14 @@ if(isset($_SESSION['loggedin'])) {
             color: #777;
             margin-top: 5px;
         }
+
+        .main-content {
+            /* margin-left: var(--sidebar-width); */
+            padding: 20px;
+            transition: margin-left var(--transition-speed) ease;
+            width: auto;
+            box-sizing: border-box;
+        }
         
         /* Responsive */
         @media (max-width: 1200px) {
@@ -285,84 +293,14 @@ if(isset($_SESSION['loggedin'])) {
     </style>
 </head>
 <body>
-    <!-- Mobile menu toggle button -->
-    
-    <!-- Sidebar navigation -->
-    <div class="sidebar" id="sidebar">
-        <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <span class="sidebar-logo-icon">🚀</span>
-                <span class="sidebar-logo-text">Efficio</span>
-            </div>
-            <button class="sidebar-toggle" id="sidebarToggle">◀</button>
-        </div>
-        
-        <ul class="sidebar-menu">
-            <li class="sidebar-menu-item">
-                <a href="dashboard.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📊</span>
-                    <span class="sidebar-menu-text">Dashboard</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="GoalTracking.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">🎯</span>
-                    <span class="sidebar-menu-text">Goal Tracking</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="Workspace.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📝</span>
-                    <span class="sidebar-menu-text">Task Workspace</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="Time Tracker.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">⏱️</span>
-                    <span class="sidebar-menu-text">Time Tracker</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="ProductivityAnalysis.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">📈</span>
-                    <span class="sidebar-menu-text">Analytics</span>
-                </a>
-            </li>
-            <li class="sidebar-menu-item">
-                <a href="C_Manager.php" class="sidebar-menu-link">
-                    <span class="sidebar-menu-icon">👥</span>
-                    <span class="sidebar-menu-text">Collaboration</span>
-                </a>
-            </li>
-        </ul>
-        
-        <!-- User profile section (for logged in users) -->
-        <div class="sidebar-user" id="userLoggedIn" style="display: none;">
-            <div class="user-avatar">
-                <?php echo substr(htmlspecialchars($_SESSION['username']), 0, 2); ?>
-            </div>
-            <div class="user-info">
-                <div class="user-name"><?php echo $_SESSION['username']; ?></div>
-                <div class="user-status">Premium Member</div>
-                <a href="Login.php" class="user-logout">Logout</a>
-            </div>
-        </div>
-        
-        <!-- Login button (for guests) -->
-        <div class="sidebar-user" id="userLoggedOut">
-            <a href="Login.php" class="login-btn">
-                <span class="login-icon">🔑</span>
-                <span class="login-text">Login / Sign Up</span>
-            </a>
-        </div>
-    </div>
+    <!-- include it here so it render first. -->
+    <?php include 'sidebar.php'; ?>
 
     <!-- Main content -->
     <div class="main-content" id="mainContent">
         <div class="dashboard-grid">
             <div class="section welcome-section">
-                <h1>Welcome back, <?php echo htmlspecialchars($_SESSION['username']); ?>!</h1>
+            <h1>Welcome to Efficio, <?php echo isset($_SESSION['username']) ? htmlspecialchars($_SESSION['username']) : 'Guest'; ?>!</h1>
                 <p>You have 3 tasks due today and 2 goals to check in. Keep up the great work!</p>
             </div>
 
