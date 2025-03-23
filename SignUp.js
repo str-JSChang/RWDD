@@ -1,5 +1,5 @@
 document.getElementById("signup-form").addEventListener("submit", function(event) {
-    event.preventDefault();
+    // event.preventDefault();
 
     let isValid = true;
     let username = document.getElementById("username").value.trim();
@@ -46,7 +46,6 @@ document.getElementById("signup-form").addEventListener("submit", function(event
     }
 
     if (isValid) {
-        alert("Sign-up successful!");
-        // Here you can add backend API call for actual user registration
+        this.submit();
     }
 });

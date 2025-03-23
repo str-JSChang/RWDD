@@ -1,5 +1,5 @@
 document.getElementById("login-form").addEventListener("submit", function(event) {
-    event.preventDefault();
+    // event.preventDefault();
 
     let isValid = true;
     let email = document.getElementById("email").value.trim();
@@ -23,7 +23,8 @@ document.getElementById("login-form").addEventListener("submit", function(event)
     }
 
     if (isValid) {
-        alert("Login successful!");
-        window.location.href = "dashboard.html"; // Redirect to dashboard
+        // alert("Login successful!");
+        this.submit()
+        // window.location.href = "dashboard.php"; 
     }
 });

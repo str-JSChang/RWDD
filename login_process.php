@@ -18,7 +18,7 @@ try {
         //execute(): Runs the query.
         //get_result(): Gets the query result.
         
-        $sql = "SELECT id, username, password FROM users WHERE email = ?";
+        $sql = "SELECT user_id, username, password FROM individual WHERE email = ?";
         if ($stmt = $conn->prepare($sql)) {
             $stmt->bind_param("s", $email);
             $stmt->execute();
@@ -39,7 +39,7 @@ try {
                     $_SESSION['username'] = $user['username'];
 
                     // Redirect to dashboard
-                    header("Location: dashboard.html");
+                    header("Location: dashboard.php");
                     exit();
                 } else {
                     $_SESSION['login_error'] = "Invalid email or password.";
@@ -59,7 +59,7 @@ try {
     error_log($e->getMessage()); // Log the error for debugging
 } finally {
     $conn->close();
-    header("Location: Login.html");
+    header("Location: Login.php");
     exit();
 }
 ?>

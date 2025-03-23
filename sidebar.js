@@ -11,7 +11,7 @@ document.getElementById('mobileMenuToggle').addEventListener('click', function()
 
 // Set active menu item based on current page
 document.addEventListener('DOMContentLoaded', function() {
-    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.php';
     document.querySelectorAll('.sidebar-menu-link').forEach(link => {
         if (link.getAttribute('href') === currentPage) {
             link.classList.add('active');
