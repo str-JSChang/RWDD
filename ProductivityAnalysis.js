@@ -1,8 +1,10 @@
 // Initialize analytics when the DOM content is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // No joking, the code below here, i spend almost 1 hour, just to identify, why is my page, loaded as Logged in? while logged out, bro, do i need more monitor? or should i just fix my eye.... i comment it because i think it is funny, i looked for sidebar.php, i look for the debugger under firefox inspect element, look at those codes, just realizing why i never check this JS here, there's too many codes, i'm freaking out too much. -Jason
+
     // For demo: set user as logged in
-    document.getElementById('userLoggedIn').style.display = 'flex';
-    document.getElementById('userLoggedOut').style.display = 'none';
+    // document.getElementById('userLoggedIn').style.display = 'flex';
+    // document.getElementById('userLoggedOut').style.display = 'none';
     
     // Load and display analytics data
     updateAnalytics();

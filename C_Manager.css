@@ -364,10 +364,6 @@ button:hover {
         align-items: flex-start;
     }
 
-    button {
-        width: 100%;
-    }
-
     .chat-message {
         font-size: 14px;
     }

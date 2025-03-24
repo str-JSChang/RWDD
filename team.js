@@ -497,6 +497,7 @@ function handleFileUpload() {
     const file = fileInput.files[0];
     console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
     
+    // this is not popping out, not sure where, maybe because i'm blur
     // Check file size (10MB limit)
     const maxSize = 10 * 1024 * 1024; // 10MB in bytes
     if (file.size > maxSize) {

@@ -238,12 +238,22 @@
     .sidebar.active {
         width: var(--sidebar-width);
     }
+
+    /* added */
+    .sidebar.active ~ .main-content {  
+        margin-left: var(--sidebar-width);
+    }
     
     .main-content {
         margin-left: 0;
+        transition: margin-left var(--transition-speed) ease;
     }
     
     .mobile-menu-toggle {
         display: block;
+    }
+
+    .sidebar-toggle {
+        display:none !important;
     }
 }
