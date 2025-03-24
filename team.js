@@ -1,6 +1,6 @@
 // Global variables
 let currentCollabId = null;
-let isSubmitting = false; // Add flag to prevent double submission
+let isSubmitting = false; // Flag to prevent duplicate submissions
 
 // Initialize collaboration functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             openTab(event, this.textContent.includes('Post') ? 'Post' : 'TaskManagement');
         });
     });
+    
     // Load collaborations from server
     loadCollaborations();
     
@@ -50,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Use a single event handler for the send button
+    // Set up message sending button
     const sendBtn = document.querySelector('.send-icon');
     if (sendBtn) {
         sendBtn.addEventListener('click', function(event) {
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
         fileInput.addEventListener('change', handleFileUpload);
     }
 
+    // Action buttons in the collaboration header
     const actionButtons = document.querySelectorAll('.action-btn');
     if (actionButtons.length > 0) {
         // Share document button
@@ -111,26 +113,26 @@ function loadCollaborations() {
                 collabList.appendChild(addCollabBtn);
                 
                 // Add collaborations from server
-                data.collabs.forEach(collab => {
-                    const collabItem = document.createElement('div');
-                    collabItem.className = 'collab-item';
-                    collabItem.dataset.id = collab.collab_id;
-                    collabItem.innerHTML = `
-                        <span class="collab-icon">#</span>
-                        <span class="collab-name">${collab.collab_name}</span>
-                    `;
-                    
-                    // Add click event
-                    collabItem.addEventListener('click', function() {
-                        switchCollab(this);
+                if (data.collabs && data.collabs.length > 0) {
+                    data.collabs.forEach(collab => {
+                        const collabItem = document.createElement('div');
+                        collabItem.className = 'collab-item';
+                        collabItem.dataset.id = collab.collab_id;
+                        collabItem.innerHTML = `
+                            <span class="collab-icon">#</span>
+                            <span class="collab-name">${collab.collab_name}</span>
+                        `;
+                        
+                        // Add click event
+                        collabItem.addEventListener('click', function() {
+                            switchCollab(this);
+                        });
+                        
+                        // Insert before "Add collaboration" button
+                        collabList.insertBefore(collabItem, addCollabBtn);
                     });
                     
-                    // Insert before "Add collaboration" button
-                    collabList.insertBefore(collabItem, addCollabBtn);
-                });
-                
-                // Select first collaboration if available
-                if (data.collabs.length > 0) {
+                    // Select first collaboration if available
                     const firstCollab = document.querySelector('.collab-item:not(.add-collab)');
                     if (firstCollab) {
                         switchCollab(firstCollab);
@@ -142,7 +144,7 @@ function loadCollaborations() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            console.error('Error fetching collaborations:', error);
         });
 }
 
@@ -283,12 +285,17 @@ function loadMessages(collabId) {
                 return;
             }
             
+            // Debug data
+            console.log('Received messages:', data.messages);
+            
             // Add messages to the chat
             data.messages.forEach(message => {
+                console.log('Processing message:', message);
+                
                 const messageEl = createMessageElement({
                     id: message.message_id,
                     user: message.username,
-                    user_id: message.user_id,
+                    user_id: parseInt(message.user_id, 10),
                     avatar: message.username.substring(0, 1).toUpperCase(),
                     message: message.message_text,
                     time: formatDateTime(message.created_at),
@@ -305,34 +312,53 @@ function loadMessages(collabId) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         })
         .catch(error => {
-            console.error('Error:', error);
-            chatMessages.innerHTML = `<div class="error-message">Failed to load messages</div>`;
+            console.error('Error loading messages:', error);
+            chatMessages.innerHTML = `<div class="error-message">Failed to load messages: ${error.message}</div>`;
         });
 }
 
 // Format date and time
 function formatDateTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleString();
+    if (!dateString) return '';
+    
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return dateString; // Return original if not valid date
+        }
+        return date.toLocaleString();
+    } catch (error) {
+        console.error('Error formatting date:', error);
+        return dateString;
+    }
 }
 
 // Create a message element
 function createMessageElement(data) {
+    console.log('Creating message element with data:', data);
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message';
     messageDiv.dataset.messageId = data.id;
     
     // Check if this is the current user's message
-    const userId = document.querySelector('#mainContent')?.dataset.userId;
-    if (userId && data.user_id === parseInt(userId)) {
+    const mainContent = document.getElementById('mainContent');
+    const userId = mainContent ? parseInt(mainContent.dataset.userId, 10) : null;
+    
+    console.log('Current user ID:', userId, 'Message user ID:', data.user_id);
+    
+    if (userId && data.user_id === userId) {
         messageDiv.classList.add('own-message');
     }
     
     let attachmentHtml = '';
-    if (data.attachment) {
+    
+    if (data.attachment && data.attachment.path) {
+        console.log('Message has attachment:', data.attachment);
+        
         attachmentHtml = `
             <div class="message-attachment">
-                <div class="attachment-preview">${data.attachment.name}</div>
+                <div class="attachment-preview">${data.attachment.name || 'Attachment'}</div>
                 <div class="attachment-actions">
                     <a href="${data.attachment.path}" class="attachment-btn" download>Download</a>
                 </div>
@@ -341,13 +367,13 @@ function createMessageElement(data) {
     }
     
     messageDiv.innerHTML = `
-        <div class="message-avatar">${data.avatar}</div>
+        <div class="message-avatar">${data.avatar || '?'}</div>
         <div class="message-content">
             <div class="message-header">
-                <span class="message-username">${data.user}</span>
-                <span class="message-time">${data.time}</span>
+                <span class="message-username">${data.user || 'User'}</span>
+                <span class="message-time">${data.time || 'Now'}</span>
             </div>
-            <div class="message-text">${data.message}</div>
+            <div class="message-text">${data.message || ''}</div>
             ${attachmentHtml}
         </div>
     `;
@@ -359,6 +385,7 @@ function createMessageElement(data) {
 function sendMessage() {
     // Prevent duplicate submissions
     if (isSubmitting) {
+        console.log('Already submitting a message, please wait...');
         return;
     }
     
@@ -389,14 +416,8 @@ function sendMessage() {
     
     // Add attachment if selected
     if (hasAttachment) {
+        console.log('Adding attachment to form data:', fileInput.files[0].name);
         formData.append('attachment', fileInput.files[0]);
-    }
-    
-    // Save current values before clearing
-    const originalMessage = chatInput.value;
-    let originalFile = null;
-    if (hasAttachment) {
-        originalFile = fileInput.files[0];
     }
     
     // Clear input fields immediately to prevent double-clicking
@@ -408,13 +429,22 @@ function sendMessage() {
         attachmentsContainer.innerHTML = '';
     }
     
+    console.log('Sending message to server...');
+    
     // Send to server
     fetch('post_messages.php', {
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Server response:', data);
+        
         if (data.success) {
             // Successfully sent message, now clear file input
             if (fileInput) fileInput.value = '';
@@ -422,10 +452,12 @@ function sendMessage() {
             // Add message to chat
             const chatMessages = document.getElementById('chatMessages');
             if (chatMessages) {
+                console.log('Adding new message to chat:', data.message);
+                
                 const messageEl = createMessageElement({
                     id: data.message.message_id,
                     user: data.message.username,
-                    user_id: data.message.user_id,
+                    user_id: parseInt(data.message.user_id, 10),
                     avatar: data.message.username.substring(0, 1).toUpperCase(),
                     message: data.message.message_text,
                     time: formatDateTime(data.message.created_at),
@@ -441,15 +473,12 @@ function sendMessage() {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         } else {
-            // If error, restore the original message
-            chatInput.value = originalMessage;
+            console.error('Error from server:', data.error);
             alert('Error sending message: ' + data.error);
         }
     })
     .catch(error => {
-        // If error, restore the original message
-        chatInput.value = originalMessage;
-        console.error('Error:', error);
+        console.error('Error sending message:', error);
         alert('Failed to send message: ' + error.message);
     })
     .finally(() => {
@@ -466,6 +495,16 @@ function handleFileUpload() {
     if (!fileInput || !fileInput.files.length) return;
     
     const file = fileInput.files[0];
+    console.log('File selected:', file.name, 'Size:', file.size, 'Type:', file.type);
+    
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+        alert('File is too large. Maximum size is 10MB.');
+        fileInput.value = '';
+        return;
+    }
+    
     const attachmentsContainer = document.getElementById('attachmentsContainer');
     
     if (attachmentsContainer) {
@@ -498,6 +537,7 @@ function removeAttachment() {
     }
 }
 
+// Tab functionality
 function openTab(evt, tabName) {
     // Hide all tabcontent elements
     var tabcontent = document.getElementsByClassName("tabcontent");
