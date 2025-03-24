@@ -74,24 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
         fileInput.addEventListener('change', handleFileUpload);
     }
 
-    // Action buttons in the collaboration header
-    const actionButtons = document.querySelectorAll('.action-btn');
-    if (actionButtons.length > 0) {
-        // Share document button
-        actionButtons[0].addEventListener('click', function() {
-            alert('Share document functionality will be added in a future update.');
-        });
-        
-        // Start meeting button
-        actionButtons[1].addEventListener('click', function() {
-            alert('Meeting functionality will be added in a future update.');
-        });
-        
-        // Add member button
-        actionButtons[2].addEventListener('click', function() {
-            alert('Add member functionality will be added in a future update.');
-        });
-    }
 });
 
 // Load collaborations from server
