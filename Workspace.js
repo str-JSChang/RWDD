@@ -329,6 +329,47 @@ function selectColor(color, categoryName) {
     });
 }
 
+function deleteCategory(categoryId) {
+    // Confirm deletion
+    if (!confirm('Are you sure you want to delete this category? All tasks in this category will also be deleted.')) {
+        return;
+    }
+
+    // Send delete request
+    const formData = new FormData();
+    formData.append('category_id', categoryId);
+
+    fetch('delete_category.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove category from UI
+            const categoryElement = document.getElementById(`category-${categoryId}`);
+            if (categoryElement) {
+                categoryElement.remove();
+            }
+
+            // Remove category from edit panel dropdown
+            const categorySelect = document.getElementById("task-category");
+            const optionToRemove = Array.from(categorySelect.options).find(
+                option => option.value == categoryId
+            );
+            if (optionToRemove) {
+                categorySelect.remove(optionToRemove.index);
+            }
+        } else {
+            alert('Error deleting category: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the category.');
+    });
+}
+
 // Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     // Populate category dropdown in edit panel
@@ -338,6 +379,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const categoryId = category.dataset.categoryId;
         const categoryName = category.querySelector('h3').textContent.trim().replace('+', '').trim();
         
+        // // Add delete button to category header
+        // const categoryHeader = category.querySelector('h3');
+        // const deleteButton = document.createElement('button');
+        // deleteButton.textContent = '🗑';
+        // deleteButton.style.backgroundColor = 'red';
+        // deleteButton.style.color = 'white';
+        // deleteButton.style.border = 'none';
+        // deleteButton.style.borderRadius = '50%';
+        // deleteButton.style.width = '25px';
+        // deleteButton.style.height = '25px';
+        // deleteButton.style.display = 'flex';
+        // deleteButton.style.justifyContent = 'center';
+        // deleteButton.style.alignItems = 'center';
+        // deleteButton.onclick = () => deleteCategory(categoryId);
+        
+        // // Adjust the header to accommodate the delete button
+        // categoryHeader.style.display = 'flex';
+        // categoryHeader.style.justifyContent = 'space-between';
+        // categoryHeader.style.alignItems = 'center';
+        
+        // // Append delete button
+        // categoryHeader.appendChild(deleteButton);
+        
+        // Add to category dropdown
         const option = document.createElement("option");
         option.value = categoryId;
         option.textContent = categoryName;

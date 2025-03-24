@@ -15,6 +15,8 @@ if(isset($_SESSION['login_error'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="Login.css">
+    <!-- Add Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
 
@@ -34,7 +36,12 @@ if(isset($_SESSION['login_error'])) {
 
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password">
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password">
+                    <button type="button" id="toggle-password" class="toggle-password" aria-label="Show password">
+                        <i class="fa fa-eye"></i>
+                    </button>
+                </div>
                 <p class="error-message" id="password-error">Password must be at least 6 characters.</p>
             </div>
 
@@ -45,7 +52,5 @@ if(isset($_SESSION['login_error'])) {
     </div>
 
     <script src="Login.js"></script>
-
 </body>
 </html>
-

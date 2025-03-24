@@ -1,51 +1,90 @@
-document.getElementById("signup-form").addEventListener("submit", function(event) {
-    // event.preventDefault();
-
-    let isValid = true;
-    let username = document.getElementById("username").value.trim();
-    let email = document.getElementById("email").value.trim();
-    let password = document.getElementById("password").value.trim();
-    let confirmPassword = document.getElementById("confirm-password").value.trim();
-
-    // Username validation (must contain alphabets and at least 6 characters)
-    let usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{6,}$/;
-    if (!usernameRegex.test(username)) {
-        document.getElementById("username-error").textContent = "Username must contain letters and be at least 6 characters.";
-        document.getElementById("username-error").style.display = "block";
-        isValid = false;
-    } else {
-        document.getElementById("username-error").style.display = "none";
+document.addEventListener('DOMContentLoaded', function() {
+    const signupForm = document.getElementById("signup-form");
+    const usernameInput = document.getElementById("username");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const confirmPasswordInput = document.getElementById("confirm-password");
+    
+    // Password toggle functionality for both password fields
+    function setupPasswordToggle(passwordField, toggleButton) {
+        if (toggleButton) {
+            toggleButton.addEventListener('click', function() {
+                if (passwordField.type === 'password') {
+                    passwordField.type = 'text';
+                    this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                    this.setAttribute('aria-label', 'Hide password');
+                } else {
+                    passwordField.type = 'password';
+                    this.innerHTML = '<i class="fas fa-eye"></i>';
+                    this.setAttribute('aria-label', 'Show password');
+                }
+            });
+        }
     }
 
-    // Email validation (must be in proper format)
-    let emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(email)) {
-        document.getElementById("email-error").textContent = "Enter a valid email format (e.g., example@gmail.com).";
-        document.getElementById("email-error").style.display = "block";
-        isValid = false;
-    } else {
-        document.getElementById("email-error").style.display = "none";
-    }
+    // Setup toggle for password fields
+    setupPasswordToggle(
+        passwordInput, 
+        document.getElementById("toggle-password")
+    );
+    setupPasswordToggle(
+        confirmPasswordInput, 
+        document.getElementById("toggle-confirm-password")
+    );
 
-    // Password validation (minimum 6 characters)
-    if (password.length < 6) {
-        document.getElementById("password-error").textContent = "Password must be at least 6 characters.";
-        document.getElementById("password-error").style.display = "block";
-        isValid = false;
-    } else {
-        document.getElementById("password-error").style.display = "none";
-    }
+    // Form submission event listener
+    signupForm.addEventListener("submit", function(event) {
+        let isValid = true;
 
-    // Confirm password validation (must match password)
-    if (confirmPassword !== password || confirmPassword === "") {
-        document.getElementById("confirm-password-error").textContent = "Passwords do not match.";
-        document.getElementById("confirm-password-error").style.display = "block";
-        isValid = false;
-    } else {
-        document.getElementById("confirm-password-error").style.display = "none";
-    }
+        // Username validation (must contain alphabets and be at least 6 characters)
+        const username = usernameInput.value.trim();
+        const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9]{6,}$/;
+        const usernameErrorElement = document.getElementById("username-error");
+        if (!usernameRegex.test(username)) {
+            usernameErrorElement.textContent = "Username must contain letters and be at least 6 characters.";
+            usernameErrorElement.style.display = "block";
+            isValid = false;
+        } else {
+            usernameErrorElement.style.display = "none";
+        }
 
-    if (isValid) {
-        this.submit();
-    }
+        // Email validation (must be in proper format)
+        const email = emailInput.value.trim();
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const emailErrorElement = document.getElementById("email-error");
+        if (!emailRegex.test(email)) {
+            emailErrorElement.textContent = "Enter a valid email format (e.g., example@gmail.com).";
+            emailErrorElement.style.display = "block";
+            isValid = false;
+        } else {
+            emailErrorElement.style.display = "none";
+        }
+
+        // Password validation (minimum 6 characters)
+        const password = passwordInput.value.trim();
+        const passwordErrorElement = document.getElementById("password-error");
+        if (password.length < 6) {
+            passwordErrorElement.textContent = "Password must be at least 6 characters.";
+            passwordErrorElement.style.display = "block";
+            isValid = false;
+        } else {
+            passwordErrorElement.style.display = "none";
+        }
+
+        // Confirm password validation (must match password)
+        const confirmPassword = confirmPasswordInput.value.trim();
+        const confirmPasswordErrorElement = document.getElementById("confirm-password-error");
+        if (confirmPassword !== password || confirmPassword === "") {
+            confirmPasswordErrorElement.textContent = "Passwords do not match.";
+            confirmPasswordErrorElement.style.display = "block";
+            isValid = false;
+        } else {
+            confirmPasswordErrorElement.style.display = "none";
+        }
+
+        // Prevent form submission if validation fails
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
 });

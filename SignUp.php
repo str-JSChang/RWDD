@@ -18,6 +18,7 @@ if(isset($_SESSION['signup_error'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="SignUp.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 </head>
 <body>
 
@@ -45,13 +46,23 @@ if(isset($_SESSION['signup_error'])) {
 
             <div class="input-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password">
+                <div class="password-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password">
+                    <button type="button" id="toggle-password" class="toggle-password" aria-label="Show password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 <p class="error-message" id="password-error">Password must be at least 6 characters long.</p>
             </div>
 
             <div class="input-group">
                 <label for="confirm-password">Confirm Password</label>
-                <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password">
+                <div class="password-wrapper">
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirm your password">
+                    <button type="button" id="toggle-confirm-password" class="toggle-password" aria-label="Show password">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
                 <p class="error-message" id="confirm-password-error">Passwords do not match.</p>
             </div>
 

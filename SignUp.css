@@ -59,6 +59,28 @@ h2 {
     outline: none;
 }
 
+/* Password Wrapper for Toggle Button */
+.password-wrapper {
+    position: relative;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #888;
+    font-size: 16px;
+    padding: 5px;
+}
+
+.toggle-password:hover {
+    color: #007BFF;
+}
+
 /* Error Message */
 .error-message {
     color: red;

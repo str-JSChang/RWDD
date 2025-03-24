@@ -89,9 +89,12 @@ if ($isLoggedIn) {
                     <?php foreach ($categories as $category): ?>
                         <div class="task-category" id="category-<?php echo $category['category_id']; ?>" 
                              data-category-id="<?php echo $category['category_id']; ?>">
-                            <h3 style="border-left: 5px solid <?php echo $category['color_code']; ?>; padding-left: 10px;">
+                             <h3 style="display: flex; justify-content: space-between; align-items: center; border-left: 5px solid <?php echo $category['color_code']; ?>; padding-left: 10px;">
                                 <?php echo htmlspecialchars($category['category_name']); ?> 
-                                <button onclick="addTask(<?php echo $category['category_id']; ?>)">+</button>
+                                <div>
+                                    <button onclick="addTask(<?php echo $category['category_id']; ?>)" style="margin-right: 10px;">+</button>
+                                    <button onclick="deleteCategory(<?php echo $category['category_id']; ?>)" style="background-color: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; display: flex; justify-content: center; align-items: center;">🗑</button>
+                                </div>
                             </h3>
                             <div class="task-list">
                                 <?php 
