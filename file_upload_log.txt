@@ -16,3 +16,17 @@
 [24-Mar-2025 02:03:09 UTC] File uploaded successfully to: C:\wamp64\www\RWDD/uploads/1742781789_menu.csv
 [24-Mar-2025 02:03:09 UTC] Message inserted successfully with ID: 28
 [24-Mar-2025 02:03:09 UTC] Attachment saved at: uploads/1742781789_menu.csv
+[24-Mar-2025 05:37:02 UTC] File upload detected: Array
+(
+    [name] => fileHandler.java
+    [full_path] => fileHandler.java
+    [type] => application/octet-stream
+    [tmp_name] => C:\wamp64\tmp\phpA433.tmp
+    [error] => 0
+    [size] => 14391
+)
+
+[24-Mar-2025 05:37:02 UTC] Attempting to move uploaded file to: C:\wamp64\www\RWDD/uploads/1742794622_fileHandler.java
+[24-Mar-2025 05:37:02 UTC] File uploaded successfully to: C:\wamp64\www\RWDD/uploads/1742794622_fileHandler.java
+[24-Mar-2025 05:37:02 UTC] Message inserted successfully with ID: 29
+[24-Mar-2025 05:37:02 UTC] Attachment saved at: uploads/1742794622_fileHandler.java

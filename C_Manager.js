@@ -29,12 +29,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
-    
-    // Set default tab
-    let defaultTab = document.querySelector(".tablinks");
-    if (defaultTab) {
-        defaultTab.click();
-    }
 });
 
 // Tab Switching

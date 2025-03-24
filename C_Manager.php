@@ -28,15 +28,15 @@ echo "-->";
             <div class="collab-tabs">
                 <button class="tablinks active" onclick="openTab(event, 'Post')">
                     <span class="tab-icon">💬</span> Post
-                </button>
+                <!-- </button>
                 <button class="tablinks" onclick="openTab(event, 'TaskManagement')">
                     <span class="tab-icon">📋</span> Team Management
-                </button>
+                </button> -->
             </div>
             
             <div class="collab-actions">
-                <button class="action-btn" title="Share document">📄</button>
-                <button class="action-btn" title="Start meeting">👥</button>
+                <!-- <button class="action-btn" title="Share document">📄</button>
+                <button class="action-btn" title="Start meeting">👥</button> -->
                 <button class="action-btn" title="Add member">👤</button>
             </div>
         </div>
@@ -65,37 +65,6 @@ echo "-->";
                 </div>
             </div>
         </div>
-
-        <!-- Task Management Section -->
-        <div id="TaskManagement" class="tabcontent" style="display: none;">
-            <div class="wrapper">
-                <h2>Task Management - Manager</h2>
-
-                <input type="text" id="taskName" placeholder="Task Name">
-                <input type="text" id="ownerName" placeholder="Owner Name">
-    
-                <select id="taskPriority">
-                    <option value="Critical">Critical</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                </select>
-    
-                <input type="datetime-local" id="dueDate">
-                <button id="assignTask">Assign Task</button>
-    
-                <table id="taskTable">
-                    <tr>
-                        <th>Task</th>
-                        <th>Owner</th>
-                        <th>Priority</th>
-                        <th>Progress</th>
-                        <th>Due Date</th>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </div>
 
     <!-- Collaboration Selector Modal -->
     <div id="collabModal" class="modal">
