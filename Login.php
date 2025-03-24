@@ -1,3 +1,13 @@
+<?php
+session_start();
+// Check for error messages
+$error_message = "";
+if(isset($_SESSION['login_error'])) {
+    $error_message = $_SESSION['login_error'];
+    unset($_SESSION['login_error']); // Clear the error after displaying
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +20,11 @@
 
     <div class="login-container">
         <h2>Login</h2>
+        <?php if(!empty($error_message)): ?>
+        <div class="error-message" style="color: red; margin-bottom: 15px; text-align: center;">
+            <?php echo $error_message; ?>
+        </div>
+        <?php endif; ?>
         <form id="login-form" action="login_process.php" method="POST">
             <div class="input-group">
                 <label for="email">Email</label>

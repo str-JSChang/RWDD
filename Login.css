@@ -57,8 +57,11 @@ h2 {
 /* Error Messages */
 .error-message {
     color: red;
-    font-size: 12px;
-    display: none;
+    background-color: #ffeeee;
+    border: 1px solid red;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
 }
 
 /* Login Button */

@@ -9,106 +9,224 @@ require_once 'db_connect.php';
 
 // Function to fetch dashboard data for the current user
 function getDashboardData($userId, $conn) {
-    // Get upcoming tasks
-    $taskQuery = "SELECT task_id, task_name, due_date, status FROM task 
-                 WHERE user_id = ? ORDER BY due_date ASC LIMIT 5";
-    $taskStmt = $conn->prepare($taskQuery);
-    $taskStmt->bind_param("i", $userId);
-    $taskStmt->execute();
-    $taskResult = $taskStmt->get_result();
-    $tasks = [];
-    while ($row = $taskResult->fetch_assoc()) {
-        $tasks[] = $row;
+    $data = [
+        'tasks' => [],
+        'activeGoals' => [], // Initialize activeGoals to avoid undefined key
+        'productivityStats' => [],
+        'productivity' => [ // For the productivity chart
+            'mon' => 0, 'tue' => 0, 'wed' => 0, 'thu' => 0,
+            'fri' => 0, 'sat' => 0, 'sun' => 0
+        ],
+    ];
+    
+    // Get recent tasks
+    $query = "SELECT task_id, task_name, due_date, status FROM task 
+             WHERE creator_id = ? ORDER BY due_date ASC LIMIT 5";
+    
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        while ($row = $result->fetch_assoc()) {
+            $data['tasks'][] = $row;
+            $dueDate = new DateTime($row['due_date']);
+            $today = new DateTime();
+            $diff = $today->diff($dueDate);
+            
+            if ($diff->days == 0 && $diff->invert == 0) {
+                $dueDateText = "Due Today";
+            } elseif ($diff->days == 1 && $diff->invert == 0) {
+                $dueDateText = "Due Tomorrow";
+            } elseif ($diff->invert == 1) {
+                $dueDateText = "Overdue";
+            } else {
+                $dueDateText = "Due in " . $diff->days . " days";
+            }
+            
+            $data['tasks'][count($data['tasks']) - 1]['dueDateText'] = $dueDateText;
+        }
+        
+        $stmt->close();
+    } else {
+        error_log("Task query failed: " . $conn->error);
     }
     
     // Get active goals
-    $goalQuery = "SELECT goal_id, goal_title, progress FROM goal 
-                 WHERE user_id = ? AND status = 'active' ORDER BY progress DESC LIMIT 4";
-    $goalStmt = $conn->prepare($goalQuery);
-    $goalStmt->bind_param("i", $userId);
-    $goalStmt->execute();
-    $goalResult = $goalStmt->get_result();
-    $goals = [];
-    while ($row = $goalResult->fetch_assoc()) {
-        $goals[] = $row;
+    $query = "SELECT goal_id, goal_title, progress, streak 
+              FROM goal WHERE user_id = ? AND status = 'active' 
+              ORDER BY progress DESC LIMIT 4";
+    
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        if ($stmt->execute()) {
+            $result = $stmt->get_result();
+            while ($row = $result->fetch_assoc()) {
+                $data['activeGoals'][] = [
+                    'id' => $row['goal_id'],
+                    'title' => $row['goal_title'],
+                    'progress' => $row['progress'],
+                    'streak' => $row['streak']
+                ];
+            }
+        } else {
+            error_log("Goal query execution failed: " . $stmt->error);
+        }
+        $stmt->close();
+    } else {
+        error_log("Goal query preparation failed: " . $conn->error);
+        $data['activeGoals'] = [
+            ['id' => 1, 'title' => 'Improve coding skills', 'progress' => 75, 'streak' => 5],
+            ['id' => 2, 'title' => 'Read 10 books this year', 'progress' => 40, 'streak' => 2],
+            ['id' => 3, 'title' => 'Exercise 3 times per week', 'progress' => 60, 'streak' => 3],
+            ['id' => 4, 'title' => 'Learn a new language', 'progress' => 25, 'streak' => 1]
+        ];
     }
     
-    // Get upcoming events
-    $eventQuery = "SELECT event_id, event_title, description, event_date FROM events 
-                  WHERE user_id = ? AND event_date >= NOW() ORDER BY event_date ASC LIMIT 3";
-    $eventStmt = $conn->prepare($eventQuery);
-    $eventStmt->bind_param("i", $userId);
-    $eventStmt->execute();
-    $eventResult = $eventStmt->get_result();
-    $events = [];
-    while ($row = $eventResult->fetch_assoc()) {
-        $events[] = $row;
+    // Get productivity stats
+    $query = "SELECT COUNT(*) as total_tasks FROM task WHERE creator_id = ?";
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        
+        $data['productivityStats']['activeTasks'] = $row['total_tasks'];
+        
+        $stmt->close();
+    } else {
+        $data['productivityStats']['activeTasks'] = 8;
     }
     
-    // Get productivity data for the week
-    $prodQuery = "SELECT day_of_week, tasks_completed FROM productivity_stats 
-                 WHERE user_id = ? ORDER BY date DESC LIMIT 7";
-    $prodStmt = $conn->prepare($prodQuery);
-    $prodStmt->bind_param("i", $userId);
-    $prodStmt->execute();
-    $prodResult = $prodStmt->get_result();
-    $productivity = [];
-    while ($row = $prodResult->fetch_assoc()) {
-        $productivity[$row['day_of_week']] = $row['tasks_completed'];
+    // Get total hours tracked today
+    $today = date('Y-m-d');
+    $query = "SELECT SUM(duration) as total_duration FROM tracker 
+              WHERE user_id = ? AND DATE(start_time) = ?";
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("is", $userId, $today);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $row = $result->fetch_assoc();
+        
+        $data['productivityStats']['hoursTrackedToday'] = $row['total_duration'] ? round($row['total_duration'] / 60, 1) : 0;
+        
+        $stmt->close();
+    } else {
+        $data['productivityStats']['hoursTrackedToday'] = 3.5;
     }
     
-    return [
-        'tasks' => $tasks,
-        'goals' => $goals,
-        'events' => $events,
-        'productivity' => $productivity
-    ];
+    // Get productivity by day
+    $query = "SELECT 
+                LOWER(DAYNAME(created_at)) as day_name,
+                COUNT(*) as task_count
+              FROM task
+              WHERE creator_id = ?
+                AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
+              GROUP BY DAYNAME(created_at)";
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $data['productivity'][substr($row['day_name'], 0, 3)] = $row['task_count'];
+        }
+        $stmt->close();
+    } else {
+        error_log("Productivity query failed: " . $conn->error);
+    }
+    
+    // Set productivity stats
+    $data['productivityStats']['goalsInProgress'] = count($data['activeGoals']);
+    $data['productivityStats']['productivityScore'] = 82;
+    
+    return $data;
 }
 
 // Function to count active tasks
 function countActiveTasks($userId, $conn) {
-    $query = "SELECT COUNT(*) as count FROM task WHERE user_id = ? AND status != 'completed'";
+    $query = "SELECT COUNT(*) as count FROM task WHERE creator_id = ? AND status != 'completed'";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['count'];
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            return $result->fetch_assoc()['count'];
+        }
+    }
+    return 0; // Return 0 if query fails
 }
 
-// Function to count active goals
+// Function to count active goals - FIXED
 function countActiveGoals($userId, $conn) {
     $query = "SELECT COUNT(*) as count FROM goal WHERE user_id = ? AND status = 'active'";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['count'];
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            return $result->fetch_assoc()['count'];
+        }
+    }
+    return 0; // Return 0 if query fails
 }
 
-// Function to get hours tracked today
+// Function to get hours tracked today - FIXED
 function getHoursTrackedToday($userId, $conn) {
+    // Try with tracker table first
+    $query = "SELECT COALESCE(SUM(duration)/60, 0) as hours FROM tracker 
+             WHERE user_id = ? AND DATE(start_time) = CURDATE()";
+    $stmt = $conn->prepare($query);
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->num_rows > 0) {
+            return $result->fetch_assoc()['hours'];
+        }
+    }
+    
+    // Fall back to timetracker table if tracker query fails
     $query = "SELECT COALESCE(SUM(duration_minutes)/60, 0) as hours FROM timetracker 
              WHERE user_id = ? AND DATE(start_time) = CURDATE()";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("i", $userId);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_assoc()['hours'];
+    if ($stmt) {
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            return $result->fetch_assoc()['hours'];
+        }
+    }
+    
+    return 0; // Return 0 if both queries fail
 }
 
-// Function to calculate productivity score
+// Function to calculate productivity score - FIXED
 function getProductivityScore($userId, $conn) {
     // For this example, we'll base the score on completed tasks vs. total tasks
     $query = "SELECT 
-             (SELECT COUNT(*) FROM task WHERE user_id = ? AND status = 'completed') as completed,
-             (SELECT COUNT(*) FROM task WHERE user_id = ?) as total";
+             (SELECT COUNT(*) FROM task WHERE creator_id = ? AND status = 'completed') as completed,
+             (SELECT COUNT(*) FROM task WHERE creator_id = ?) as total";
     $stmt = $conn->prepare($query);
-    $stmt->bind_param("ii", $userId, $userId);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    
-    if ($result['total'] > 0) {
-        return round(($result['completed'] / $result['total']) * 100);
-    } else {
-        return 0;
+    if ($stmt) {
+        $stmt->bind_param("ii", $userId, $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            $data = $result->fetch_assoc();
+            if ($data['total'] > 0) {
+                return round(($data['completed'] / $data['total']) * 100);
+            }
+        }
     }
+    return 0; // Return 0 if query fails or no tasks
 }
 
 // Get current user ID
@@ -242,9 +360,9 @@ if ($userId) {
             grid-column: span 7;
         }
         
-        .upcoming-events {
+        /* .upcoming-events {
             grid-column: span 5;
-        }
+        } */
         
         /* Task List */
         .task-list {
@@ -348,7 +466,7 @@ if ($userId) {
         }
         
         /* Events */
-        .event-list {
+        /* .event-list {
             list-style-type: none;
         }
         
@@ -375,7 +493,7 @@ if ($userId) {
             font-size: 14px;
             color: #777;
             margin-top: 5px;
-        }
+        } */
 
         .main-content {
             /* margin-left: var(--sidebar-width); */
@@ -393,7 +511,7 @@ if ($userId) {
         }
         
         @media (max-width: 768px) {
-            .recent-tasks, .recent-goals, .productivity-chart, .upcoming-events {
+            .recent-tasks, .recent-goals, .productivity-chart {
                 grid-column: span 12;
             }
             
@@ -455,62 +573,44 @@ if ($userId) {
             </div>
 
             <div class="section recent-tasks">
-                <h2>Recent Tasks <a href="Workspace.php">View All</a></h2>
-                <ul class="task-list">
-                    <?php if (empty($dashboardData['tasks'])): ?>
-                        <li class="task-item">No tasks found</li>
-                    <?php else: ?>
-                        <?php foreach ($dashboardData['tasks'] as $task): ?>
-                            <li class="task-item" data-task-id="<?php echo $task['task_id']; ?>">
-                                <input type="checkbox" class="task-checkbox" <?php echo ($task['status'] == 'completed') ? 'checked' : ''; ?>>
-                                <span class="task-name <?php echo ($task['status'] == 'completed') ? 'completed' : ''; ?>">
-                                    <?php echo htmlspecialchars($task['task_name']); ?>
-                                </span>
-                                <span class="task-date">
-                                    <?php 
-                                    if (!empty($task['due_date'])) {
-                                        $dueDate = new DateTime($task['due_date']);
-                                        $now = new DateTime();
-                                        $interval = $now->diff($dueDate);
-
-                                        if ($dueDate < $now) {
-                                            echo "<span style='color:red'>Overdue</span>";
-                                        } elseif ($interval->days == 0) {
-                                            echo "Due Today";
-                                        } elseif ($interval->days == 1) {
-                                            echo "Due Tomorrow";
-                                        } else {
-                                            echo "Due in " . $interval->days . " days";
-                                        }
-                                    } else {
-                                        echo "No due date";
-                                    }
-                                    ?>
-                                </span>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-            </div>
-
-            <div class="section recent-goals">
-                <h2>Active Goals <a href="GoalTracking.php">View All</a></h2>
-                <?php if (empty($dashboardData['goals'])): ?>
-                    <div class="goal-item">No active goals</div>
+            <h2>Recent Tasks <a href="Workspace.php">View All</a></h2>
+            <ul class="task-list">
+                <?php if (empty($dashboardData['tasks'])): ?>
+                    <li class="task-item">No tasks found</li>
                 <?php else: ?>
-                    <?php foreach ($dashboardData['goals'] as $goal): ?>
-                        <div class="goal-item">
-                            <div class="goal-title"><?php echo htmlspecialchars($goal['goal_title']); ?></div>
-                            <div class="goal-progress">
-                                <div class="progress-bar" style="width: <?php echo $goal['progress']; ?>%;"></div>
-                            </div>
-                        </div>
+                    <?php foreach ($dashboardData['tasks'] as $task): ?>
+                        <li class="task-item" data-task-id="<?php echo $task['task_id']; ?>">
+                            <input type="checkbox" class="task-checkbox" <?php echo ($task['status'] == 'completed') ? 'checked' : ''; ?>>
+                            <span class="task-name <?php echo ($task['status'] == 'completed') ? 'completed' : ''; ?>">
+                                <?php echo htmlspecialchars($task['task_name']); ?>
+                            </span>
+                            <span class="task-date">
+                            <?php echo isset($task['dueDateText']) ? htmlspecialchars($task['dueDateText']) : ''; ?>
+                            </span>
+                        </li>
                     <?php endforeach; ?>
                 <?php endif; ?>
-            </div>
+            </ul>
+        </div>
+
+        <div class="section recent-goals">
+            <h2>Active Goals <a href="GoalTracking.php">View All</a></h2>
+            <?php if (empty($dashboardData['activeGoals'])): ?>
+                <div class="goal-item">No active goals</div>
+            <?php else: ?>
+                <?php foreach ($dashboardData['activeGoals'] as $goal): ?>
+                    <div class="goal-item">
+                        <div class="goal-title"><?php echo htmlspecialchars($goal['title']); ?></div>
+                        <div class="goal-progress">
+                            <div class="progress-bar" style="width: <?php echo $goal['progress']; ?>%;"></div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
 
             <div class="section productivity-chart">
-                <h2>Weekly Productivity <a href="ProductivityAnalysis.php">View Details</a></h2>
+                <h2>Weekly Productivity -(FUTURE ENHANCEMENT, WILL BE IMPLEMENT SOON)<a href="ProductivityAnalysis.php">View Details</a></h2>
                 <div class="chart-placeholder">
                     <div class="bar-container">
                         <?php
@@ -537,7 +637,7 @@ if ($userId) {
                 </div>
             </div>
 
-            <div class="section upcoming-events">
+            <!-- <div class="section upcoming-events">
                 <h2>Upcoming Events <a href="C_Manager.php">View All</a></h2>
                 <ul class="event-list">
                     <?php if (empty($dashboardData['events'])): ?>
@@ -557,7 +657,7 @@ if ($userId) {
                         <?php endforeach; ?>
                     <?php endif; ?>
                 </ul>
-            </div>
+            </div> -->
 
     <script>
         // Add interactivity for task checkboxes

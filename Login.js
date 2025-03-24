@@ -23,8 +23,6 @@ document.getElementById("login-form").addEventListener("submit", function(event)
     }
 
     if (isValid) {
-        alert("Login successful!");
         this.submit()
-        window.location.href = "dashboard.php"; 
     }
 });

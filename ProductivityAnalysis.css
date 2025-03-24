@@ -1,225 +1,144 @@
-/* General Styles */
-body {
-    font-family: Arial, sans-serif;
+/* Reset and Base Styles */
+* {
     margin: 0;
     padding: 0;
-    background: #f4f4f4;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
-.analysis-container {
-    padding: 20px;
+body {
+    background-color: #f4f7fc;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Productivity Analysis Styles */
+.productivity-analysis-container {
     max-width: 1200px;
     margin: 0 auto;
-}
-
-/* Refresh Button */
-.refresh-button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-bottom: 20px;
-    font-size: 14px;
-}
-
-.refresh-button:hover {
-    background: #0056b3;
-}
-
-/* Analysis Cards */
-.analysis-card {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    margin-bottom: 20px;
+}
+
+.productivity-analysis-container h1 {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 24px;
+}
+
+.analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.analysis-card {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
 }
 
 .analysis-card h2 {
-    margin-top: 0;
-    color: #333;
-    font-size: 20px;
+    color: #2c3e50;
     margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
 }
 
-/* Chart Containers */
 .chart-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: center;
-}
-
-/* CSS Donut Chart */
-.css-donut-chart {
+    height: 300px;
     position: relative;
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    /* The conic-gradient will be set via CSS variables updated by JS */
-    background: conic-gradient(
-        #4e73df 0% var(--personal-end, 30%), 
-        #1cc88a var(--personal-end, 30%) var(--work-end, 55%), 
-        #36b9cc var(--work-end, 55%) var(--python-end, 80%), 
-        #f6c23e var(--python-end, 80%) 100%
-    );
 }
 
-.donut-center {
-    position: absolute;
-    width: 60%;
-    height: 60%;
-    top: 20%;
-    left: 20%;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+.detailed-insights {
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 25px;
 }
 
-.donut-center #totalHours {
+.detailed-insights h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.insight-item {
+    text-align: center;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.insight-item h3 {
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+.insight-item p {
+    color: #2c3e50;
     font-size: 24px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
-.donut-center .unit {
-    font-size: 14px;
-    color: #777;
+.login-prompt {
+    text-align: center;
+    padding: 50px 0;
 }
 
-/* Legend Styles */
-.chart-legend {
-    flex: 1;
-    min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+.login-prompt p {
+    font-size: 18px;
+    color: #7f8c8d;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
+.login-prompt a {
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-.legend-color {
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    margin-right: 10px;
+.login-prompt a:hover {
+    text-decoration: underline;
 }
 
-.personal-color { background-color: #4e73df; }
-.work-color { background-color: #1cc88a; }
-.python-color { background-color: #36b9cc; }
-.uilx-color { background-color: #f6c23e; }
-.tasks-color { background-color: #4e73df; }
-
-.legend-label {
-    flex: 1;
-    font-size: 14px;
-    color: #555;
-}
-
-.legend-percent {
-    font-weight: bold;
-    color: #333;
-}
-
-/* CSS Bar Chart */
-.css-bar-chart-container {
-    height: 250px;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 0 10px;
-    margin-bottom: 20px;
-}
-
-.chart-column {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 13%;
-}
-
-.chart-bar {
-    width: 100%;
-    background-color: #4e73df;
-    border-radius: 4px 4px 0 0;
-    transition: height 0.5s ease;
-    /* Default height will be overridden by JS */
-    height: 0%;
-}
-
-.chart-label {
-    margin-top: 10px;
-    font-size: 12px;
-    color: #777;
-}
-
-/* Bar Legend */
-.bar-legend {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-/* Productivity Summary */
-.productivity-summary {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.summary-item {
-    background: #f8f9fc;
-    padding: 10px 15px;
-    border-radius: 5px;
-    font-size: 14px;
-}
-
-.summary-label {
-    color: #666;
-    margin-right: 5px;
-}
-
-.summary-value {
-    font-weight: bold;
-    color: #333;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    .chart-container {
-        flex-direction: column;
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+    .analysis-grid {
+        grid-template-columns: 1fr;
     }
 
-    .css-donut-chart {
-        width: 200px;
-        height: 200px;
+    .insights-grid {
+        grid-template-columns: 1fr;
     }
 }
 
-@media (max-width: 480px) {
-    .analysis-container {
+@media (max-width: 576px) {
+    .productivity-analysis-container {
         padding: 10px;
     }
 
-    .analysis-card {
+    .analysis-card,
+    .detailed-insights {
         padding: 15px;
     }
 
-    .css-donut-chart {
-        width: 180px;
-        height: 180px;
+    .chart-container {
+        height: 250px;
     }
-    
-    .css-bar-chart-container {
-        height: 200px;
+
+    .insight-item p {
+        font-size: 20px;
     }
 }

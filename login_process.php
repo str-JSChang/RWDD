@@ -1,69 +1,82 @@
 <?php
+// Enable detailed error reporting
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 require_once 'db_connect.php';
 
+// Clear any previous error messages
+unset($_SESSION['login_error']);
+
 try {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Validate input
         $email = trim(strtolower($_POST['email']));
         $password = $_POST['password'];
 
+        // Input validation
         if (empty($email) || empty($password)) {
-            $_SESSION['login_error'] = "Please fill in all fields.";
-            throw new Exception("Empty email or password.");
+            throw new Exception("Please fill in all fields.");
         }
 
-        // Prepare statement with error handling
-        // Prepare statement, to enhanced security feature, prevent SQL-Injection ' OR 1=1-- -
-        // bind_param("s", $email): Binds the email to the SQL query ("s" means string).
-        //execute(): Runs the query.
-        //get_result(): Gets the query result.
-        
+        // Prepare SQL statement
         $sql = "SELECT user_id, username, password FROM individual WHERE email = ?";
-        if ($stmt = $conn->prepare($sql)) {
-            $stmt->bind_param("s", $email);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($result->num_rows === 1) {
-                // The fetch_assoc() / mysqli_fetch_assoc() function fetches a result row as an associative array. Note: Fieldnames returned from this function are case-sensitive.
-                $user = $result->fetch_assoc();
-                // Log the raw data from the database for debugging
-                error_log("User data from DB: " . print_r($user, true));
-                // Secure password verification
-                // password_verify() compares the entered password with the hashed password stored in the database.
-                if (password_verify($password, $user['password'])) {
-                    session_regenerate_id(true);
-
-                // session_regenerate_id(true): Generates a new session ID to prevent session fixation attacks.
-                    $_SESSION['loggedin'] = true;
-                    $_SESSION['user_id'] = $user['user_id'];
-                    $_SESSION['username'] = $user['username'];
-
-                    // Log session data for confirmation
-                    error_log("Session data after login: " . print_r($_SESSION, true));
-
-                    // Redirect to dashboard
-                    header("Location: dashboard.php");
-                    exit();
-                } else {
-                    $_SESSION['login_error'] = "Invalid email or password.";
-                    throw new Exception("Incorrect password for user: $email");
-                }
-            } else {
-                $_SESSION['login_error'] = "Invalid email or password.";
-                throw new Exception("Login attempt failed for non-existent user: $email");
-            }
-
-            $stmt->close();
-        } else {
-            throw new Exception("Database query preparation failed.");
+        
+        // Prepare and execute statement
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Preparation failed: " . $conn->error);
         }
+
+        $stmt->bind_param("s", $email);
+        
+        if (!$stmt->execute()) {
+            throw new Exception("Execution failed: " . $stmt->error);
+        }
+
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            // No user found with this email
+            throw new Exception("Invalid email or password.");
+        }
+
+        $user = $result->fetch_assoc();
+
+        // Verify password
+        if (!password_verify($password, $user['password'])) {
+            throw new Exception("Invalid email or password.");
+        }
+
+        // Successful login
+        session_regenerate_id(true);
+        $_SESSION['loggedin'] = true;
+        $_SESSION['user_id'] = $user['user_id'];
+        $_SESSION['username'] = $user['username'];
+
+        // Redirect to dashboard
+        header("Location: dashboard.php");
+        exit();
+
+    } else {
+        // Not a POST request
+        throw new Exception("Invalid request method.");
     }
 } catch (Exception $e) {
-    error_log($e->getMessage()); // Log the error for debugging
-} finally {
-    $conn->close();
+    // Log the error
+    error_log("Login Error: " . $e->getMessage());
+    
+    // Store error message in session
+    $_SESSION['login_error'] = $e->getMessage();
+    
+    // Redirect back to login page
     header("Location: Login.php");
     exit();
+} finally {
+    // Ensure database connection is closed
+    if (isset($conn)) {
+        $conn->close();
+    }
 }
 ?>
