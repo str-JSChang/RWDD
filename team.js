@@ -1,5 +1,6 @@
 // Global variables
 let currentCollabId = null;
+let isSubmitting = false; // Add flag to prevent double submission
 
 // Initialize collaboration functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addCollabBtn.addEventListener('click', createNewCollab);
     }
     
-    // Set up message sending
+    // Set up message sending - Using a single event handler for Enter key
     const chatInput = document.getElementById('chatInput');
     if (chatInput) {
         chatInput.addEventListener('keypress', function(event) {
@@ -49,9 +50,27 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Use a single event handler for the send button
     const sendBtn = document.querySelector('.send-icon');
     if (sendBtn) {
-        sendBtn.addEventListener('click', sendMessage);
+        sendBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            sendMessage();
+        });
+    }
+    
+    // File upload button
+    const attachmentBtn = document.querySelector('.attachment-icon');
+    if (attachmentBtn) {
+        attachmentBtn.addEventListener('click', function() {
+            document.getElementById('fileUpload').click();
+        });
+    }
+    
+    // File input change
+    const fileInput = document.getElementById('fileUpload');
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileUpload);
     }
 
     const actionButtons = document.querySelectorAll('.action-btn');
@@ -338,6 +357,11 @@ function createMessageElement(data) {
 
 // Send a new message
 function sendMessage() {
+    // Prevent duplicate submissions
+    if (isSubmitting) {
+        return;
+    }
+    
     if (!currentCollabId) {
         alert('Please select a collaboration first');
         return;
@@ -347,7 +371,16 @@ function sendMessage() {
     if (!chatInput) return;
     
     const message = chatInput.value.trim();
-    if (!message) return;
+    const fileInput = document.getElementById('fileUpload');
+    const hasAttachment = fileInput && fileInput.files.length > 0;
+    
+    // Check if there's either a message or an attachment
+    if (!message && !hasAttachment) {
+        return;
+    }
+    
+    // Set submitting flag to true
+    isSubmitting = true;
     
     // Create form data
     const formData = new FormData();
@@ -355,22 +388,36 @@ function sendMessage() {
     formData.append('message_text', message);
     
     // Add attachment if selected
-    const fileInput = document.getElementById('fileUpload');
-    if (fileInput && fileInput.files.length > 0) {
+    if (hasAttachment) {
         formData.append('attachment', fileInput.files[0]);
     }
     
+    // Save current values before clearing
+    const originalMessage = chatInput.value;
+    let originalFile = null;
+    if (hasAttachment) {
+        originalFile = fileInput.files[0];
+    }
+    
+    // Clear input fields immediately to prevent double-clicking
+    chatInput.value = '';
+    
+    // Clear attachment container
+    const attachmentsContainer = document.getElementById('attachmentsContainer');
+    if (attachmentsContainer) {
+        attachmentsContainer.innerHTML = '';
+    }
+    
     // Send to server
-    fetch('post_message.php', {
+    fetch('post_messages.php', {
         method: 'POST',
         body: formData
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Clear input
-            chatInput.value = '';
-            fileInput.value = '';
+            // Successfully sent message, now clear file input
+            if (fileInput) fileInput.value = '';
             
             // Add message to chat
             const chatMessages = document.getElementById('chatMessages');
@@ -394,12 +441,22 @@ function sendMessage() {
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         } else {
+            // If error, restore the original message
+            chatInput.value = originalMessage;
             alert('Error sending message: ' + data.error);
         }
     })
     .catch(error => {
+        // If error, restore the original message
+        chatInput.value = originalMessage;
         console.error('Error:', error);
-        alert('Failed to send message');
+        alert('Failed to send message: ' + error.message);
+    })
+    .finally(() => {
+        // Reset submitting flag after a short delay (to prevent rapid clicks)
+        setTimeout(() => {
+            isSubmitting = false;
+        }, 1000);
     });
 }
 

@@ -76,7 +76,7 @@ if ($stmt->execute()) {
     $messageQuery = "SELECT m.message_id, m.message_text, m.attachment_path, m.attachment_name, 
                     m.created_at, u.user_id, u.username
                     FROM collab_messages m
-                    INNER JOIN user u ON m.user_id = u.user_id
+                    INNER JOIN individual u ON m.user_id = u.user_id
                     WHERE m.message_id = ?";
     $msgStmt = $conn->prepare($messageQuery);
     $msgStmt->bind_param("i", $message_id);
@@ -86,7 +86,7 @@ if ($stmt->execute()) {
     
     echo json_encode(['success' => true, 'message' => $message]);
 } else {
-    echo json_encode(['success' => false, 'error' => 'Failed to post message']);
+    echo json_encode(['success' => false, 'error' => 'Failed to post message: ' . $conn->error]);
 }
 
 $conn->close();
