@@ -1,3 +1,11 @@
+<?php
+session_start();
+// Debug information - remove in production
+echo "<!--";
+var_dump($_SESSION);
+echo "-->";
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,7 +20,7 @@
     <?php include 'sidebar.php'; ?>
     
     <!-- Main content -->
-    <div class="main-content" id="mainContent">
+    <div class="main-content" id="mainContent" data-user-id="<?php echo isset($_SESSION['user_id']) ? htmlspecialchars($_SESSION['user_id']) : ''; ?>">
         <!-- Collaboration header -->
         <div class="collab-header">
             <h1 id="current-collab-title"># Python Project</h1>

@@ -11,6 +11,8 @@
     <video autoplay muted loop class="background">
         <source src="background/video.mp4" type="video/mp4">
     </video>
+
+    <div class="overlay"></div>
     <!-- include it here so it render first. -->
     <?php include 'sidebar.php'; ?>
 

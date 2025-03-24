@@ -3,6 +3,12 @@ let currentCollabId = null;
 
 // Initialize collaboration functionality
 document.addEventListener('DOMContentLoaded', function() {
+    // Set up tab switching
+    document.querySelectorAll('.tablinks').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            openTab(event, this.textContent.includes('Post') ? 'Post' : 'TaskManagement');
+        });
+    });
     // Load collaborations from server
     loadCollaborations();
     
@@ -46,6 +52,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const sendBtn = document.querySelector('.send-icon');
     if (sendBtn) {
         sendBtn.addEventListener('click', sendMessage);
+    }
+
+    const actionButtons = document.querySelectorAll('.action-btn');
+    if (actionButtons.length > 0) {
+        // Share document button
+        actionButtons[0].addEventListener('click', function() {
+            alert('Share document functionality will be added in a future update.');
+        });
+        
+        // Start meeting button
+        actionButtons[1].addEventListener('click', function() {
+            alert('Meeting functionality will be added in a future update.');
+        });
+        
+        // Add member button
+        actionButtons[2].addEventListener('click', function() {
+            alert('Add member functionality will be added in a future update.');
+        });
     }
 });
 
@@ -209,9 +233,23 @@ function loadMessages(collabId) {
     // Show loading indicator
     chatMessages.innerHTML = '<div class="loading">Loading messages...</div>';
     
-    // Fetch messages from server
-    fetch(`get_messages.php?collab_id=${collabId}`)
-        .then(response => response.json())
+    // Fetch messages from server with a timestamp to prevent caching
+    fetch(`get_messages.php?collab_id=${collabId}&_=${new Date().getTime()}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            return response.text(); // Get as text first to debug
+        })
+        .then(text => {
+            try {
+                // Try to parse as JSON
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Invalid JSON:', text);
+                throw new Error('Server returned invalid JSON');
+            }
+        })
         .then(data => {
             // Clear loading indicator
             chatMessages.innerHTML = '';
@@ -221,7 +259,7 @@ function loadMessages(collabId) {
                 return;
             }
             
-            if (data.messages.length === 0) {
+            if (!data.messages || data.messages.length === 0) {
                 chatMessages.innerHTML = `<div class="empty-messages">No messages yet. Be the first to post!</div>`;
                 return;
             }
@@ -266,7 +304,7 @@ function createMessageElement(data) {
     messageDiv.dataset.messageId = data.id;
     
     // Check if this is the current user's message
-    const userId = document.querySelector('[data-user-id]')?.dataset.userId;
+    const userId = document.querySelector('#mainContent')?.dataset.userId;
     if (userId && data.user_id === parseInt(userId)) {
         messageDiv.classList.add('own-message');
     }
@@ -401,4 +439,22 @@ function removeAttachment() {
     if (attachmentsContainer) {
         attachmentsContainer.innerHTML = '';
     }
+}
+
+function openTab(evt, tabName) {
+    // Hide all tabcontent elements
+    var tabcontent = document.getElementsByClassName("tabcontent");
+    for (var i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+
+    // Remove the "active" class from all tablinks
+    var tablinks = document.getElementsByClassName("tablinks");
+    for (var i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+
+    // Show the current tab, and add an "active" class to the button that opened the tab
+    document.getElementById(tabName).style.display = "block";
+    evt.currentTarget.className += " active";
 }

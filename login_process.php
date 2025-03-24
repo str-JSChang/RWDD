@@ -27,7 +27,8 @@ try {
             if ($result->num_rows === 1) {
                 // The fetch_assoc() / mysqli_fetch_assoc() function fetches a result row as an associative array. Note: Fieldnames returned from this function are case-sensitive.
                 $user = $result->fetch_assoc();
-
+                // Log the raw data from the database for debugging
+                error_log("User data from DB: " . print_r($user, true));
                 // Secure password verification
                 // password_verify() compares the entered password with the hashed password stored in the database.
                 if (password_verify($password, $user['password'])) {
@@ -35,8 +36,11 @@ try {
 
                 // session_regenerate_id(true): Generates a new session ID to prevent session fixation attacks.
                     $_SESSION['loggedin'] = true;
-                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_id'] = $user['user_id'];
                     $_SESSION['username'] = $user['username'];
+
+                    // Log session data for confirmation
+                    error_log("Session data after login: " . print_r($_SESSION, true));
 
                     // Redirect to dashboard
                     header("Location: dashboard.php");
