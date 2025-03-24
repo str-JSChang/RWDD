@@ -154,7 +154,13 @@ function loadGoals() {
     }
     
     fetch(url)
-        .then(response => response.json())
+        .then(response => {
+            // Check if response is OK
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 goals = data.goals;
@@ -167,16 +173,20 @@ function loadGoals() {
                 // Render goals
                 renderGoals();
             } else {
+                // Log the error message
+                console.error('Server error:', data.message);
+                
                 if (goalsGrid) {
-                    goalsGrid.innerHTML = `<div class="error-message">Error: ${data.message}</div>`;
+                    goalsGrid.innerHTML = `<div class="error-message">Error: ${data.message || 'Unknown server error'}</div>`;
                 }
-                console.error('Error loading goals:', data.message);
             }
         })
         .catch(error => {
-            console.error('Error loading goals:', error);
+            // Log the full error
+            console.error('Fetch error:', error);
+            
             if (goalsGrid) {
-                goalsGrid.innerHTML = '<div class="error-message">Failed to load goals. Please try again.</div>';
+                goalsGrid.innerHTML = `<div class="error-message">Failed to load goals: ${error.message}</div>`;
             }
         });
 }
@@ -252,6 +262,9 @@ function renderGoals() {
                     <button class="edit-btn" onclick="editGoal(${goal.id})">
                         <i class="fas fa-edit"></i>
                     </button>
+                    <button class="delete-btn" onclick="deleteGoal(${goal.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </div>
             </div>
         `;
@@ -286,11 +299,6 @@ function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'block';
-        
-        // If it's the details modal, initialize content
-        if (modalId === 'goalDetailsModal') {
-            initializeGoalDetails();
-        }
     }
 }
 
@@ -745,6 +753,64 @@ function createEditModalIfNeeded() {
     
     const form = document.getElementById('editGoalForm');
     form.addEventListener('submit', handleEditGoalSubmit);
+}
+
+function deleteGoal(goalId) {
+    // Show confirmation dialog
+    const confirmDelete = confirm('Are you sure you want to delete this goal? This action cannot be undone.');
+    
+    if (!confirmDelete) return;
+    
+    // Show loading state
+    const goalCard = document.querySelector(`.goal-card[data-goal-id="${goalId}"]`);
+    if (goalCard) {
+        goalCard.style.opacity = '0.5';
+    }
+    
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('goal_id', goalId);
+    
+    // Send delete request
+    fetch('delete_goal.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove goal from local array
+            goals = goals.filter(goal => goal.id !== goalId);
+            
+            // Remove goal card from DOM
+            if (goalCard) {
+                goalCard.remove();
+            }
+            
+            // Show success notification
+            showNotification('Goal deleted successfully!', 'success');
+            
+            // Update goal stats
+            updateGoalStats();
+        } else {
+            // Show error message
+            showNotification(`Error: ${data.message}`, 'error');
+            
+            // Restore opacity
+            if (goalCard) {
+                goalCard.style.opacity = '1';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to delete goal', 'error');
+        
+        // Restore opacity
+        if (goalCard) {
+            goalCard.style.opacity = '1';
+        }
+    });
 }
 
 // Handle edit goal form submission

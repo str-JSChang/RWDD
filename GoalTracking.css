@@ -510,6 +510,22 @@ body {
     text-decoration: underline;
 }
 
+.delete-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #f8f9fa;
+    color: #dc3545;
+    transition: background-color 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #f1f3f5;
+    color: #a71d2a;
+}
+
 /* Responsive Adjustments */
 @media (max-width: 768px) {
     .goal-stats {

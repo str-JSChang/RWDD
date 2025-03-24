@@ -4,15 +4,14 @@ let isSubmitting = false; // Flag to prevent duplicate submissions
 
 // Initialize collaboration functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Set up tab switching
-    document.querySelectorAll('.tablinks').forEach(function(button) {
-        button.addEventListener('click', function(event) {
-            openTab(event, this.textContent.includes('Post') ? 'Post' : 'TaskManagement');
-        });
-    });
-    
     // Load collaborations from server
     loadCollaborations();
+
+        document.querySelectorAll('.tablinks').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            openTab(event, this.textContent.includes('Post') ? 'Post' : 'Members');
+        });
+    });
     
     // Event listener for collaboration title
     const collabTitle = document.getElementById('current-collab-title');
@@ -522,6 +521,8 @@ function removeAttachment() {
 
 // Tab functionality
 function openTab(evt, tabName) {
+    console.log('Opening tab:', tabName); // Helpful for debugging
+    
     // Hide all tabcontent elements
     var tabcontent = document.getElementsByClassName("tabcontent");
     for (var i = 0; i < tabcontent.length; i++) {
@@ -535,6 +536,313 @@ function openTab(evt, tabName) {
     }
 
     // Show the current tab, and add an "active" class to the button that opened the tab
-    document.getElementById(tabName).style.display = "block";
-    evt.currentTarget.className += " active";
+    const tabElement = document.getElementById(tabName);
+    if (tabElement) {
+        tabElement.style.display = "block";
+        evt.currentTarget.className += " active";
+    } else {
+        console.error('Tab element not found:', tabName);
+    }
 }
+
+// Load members for the current collaboration
+function loadMembers() {
+    const membersList = document.getElementById('membersList');
+    if (!membersList) return;
+    
+    if (!currentCollabId) {
+        membersList.innerHTML = '<div class="empty-members">Please select a collaboration first</div>';
+        return;
+    }
+    
+    // Show loading indicator
+    membersList.innerHTML = '<div class="loading">Loading members...</div>';
+    
+    // Fetch members from server
+    fetch(`get_members.php?collab_id=${currentCollabId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                membersList.innerHTML = `<div class="error-message">${data.error}</div>`;
+                return;
+            }
+            
+            if (!data.members || data.members.length === 0) {
+                membersList.innerHTML = '<div class="empty-members">No members found</div>';
+                return;
+            }
+            
+            // Clear loading indicator
+            membersList.innerHTML = '';
+            
+            // Get the current user's ID
+            const currentUserId = document.getElementById('mainContent')?.dataset.userId || null;
+            const currentUserRole = data.currentUserRole || null;
+            
+            // Add members to the list
+            data.members.forEach(member => {
+                const memberEl = document.createElement('div');
+                memberEl.className = 'member-item';
+                memberEl.dataset.userId = member.user_id;
+                
+                // Get initials from username
+                const initials = member.username.substring(0, 1).toUpperCase();
+                
+                // Determine if this is the current user or if current user is admin
+                const isCurrentUser = parseInt(member.user_id) === parseInt(currentUserId);
+                const isAdmin = parseInt(member.role_id) === 1;
+                const canRemove = (currentUserRole === 1 && !isCurrentUser) || (isCurrentUser && !isAdmin);
+                
+                // Create role display text
+                const roleText = isAdmin ? 'Admin' : 'Member';
+                const adminBadge = isAdmin ? '<span class="admin-badge">Admin</span>' : '';
+                
+                memberEl.innerHTML = `
+                    <div class="member-info">
+                        <div class="member-avatar">${initials}</div>
+                        <div class="member-details">
+                            <div class="member-name">${member.username} ${adminBadge}</div>
+                            <div class="member-role">${roleText}</div>
+                        </div>
+                    </div>
+                    <div class="member-actions">
+                        ${currentUserRole === 1 && !isCurrentUser ? 
+                            `<button class="change-role" title="Change role" onclick="changeRole(${member.user_id}, ${member.role_id})">
+                                <span>👑</span>
+                            </button>` : ''}
+                        ${canRemove ? 
+                            `<button class="remove-member" title="Remove member" onclick="removeMember(${member.user_id})">
+                                <span>❌</span>
+                            </button>` : ''}
+                    </div>
+                `;
+                
+                membersList.appendChild(memberEl);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading members:', error);
+            membersList.innerHTML = `<div class="error-message">Failed to load members: ${error.message}</div>`;
+        });
+}
+
+// Change a member's role (toggle between admin and regular member)
+function changeRole(userId, currentRoleId) {
+    if (!currentCollabId) return;
+    
+    // Confirm role change
+    const newRoleId = currentRoleId === 1 ? 2 : 1;
+    const newRoleName = newRoleId === 1 ? 'admin' : 'regular member';
+    
+    if (!confirm(`Change this user's role to ${newRoleName}?`)) {
+        return;
+    }
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('collab_id', currentCollabId);
+    formData.append('new_role_id', newRoleId);
+    
+    // Disable the button during the request
+    const button = document.querySelector(`.member-item[data-user-id="${userId}"] .change-role`);
+    if (button) {
+        button.disabled = true;
+    }
+    
+    // Send to server
+    fetch('change_role.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reload the members list to show updated roles
+            loadMembers();
+        } else {
+            alert('Error changing role: ' + data.error);
+            // Re-enable the button
+            if (button) {
+                button.disabled = false;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error changing role:', error);
+        alert('Failed to change role: ' + error.message);
+        // Re-enable the button
+        if (button) {
+            button.disabled = false;
+        }
+    });
+}
+
+// Remove a member from the collaboration
+function removeMember(userId) {
+    if (!currentCollabId) return;
+    
+    // Confirm member removal
+    if (!confirm('Are you sure you want to remove this member from the collaboration?')) {
+        return;
+    }
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('user_id', userId);
+    formData.append('collab_id', currentCollabId);
+    
+    // Disable the button during the request
+    const button = document.querySelector(`.member-item[data-user-id="${userId}"] .remove-member`);
+    if (button) {
+        button.disabled = true;
+    }
+    
+    // Send to server
+    fetch('remove_member.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // If current user removed themselves, reload collaborations
+            if (parseInt(userId) === parseInt(document.getElementById('mainContent')?.dataset.userId)) {
+                loadCollaborations();
+            } else {
+                // Otherwise just reload the members list
+                loadMembers();
+            }
+        } else {
+            alert('Error removing member: ' + data.error);
+            // Re-enable the button
+            if (button) {
+                button.disabled = false;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error removing member:', error);
+        alert('Failed to remove member: ' + error.message);
+        // Re-enable the button
+        if (button) {
+            button.disabled = false;
+        }
+    });
+}
+
+// Open delete collaboration confirmation modal
+function confirmDeleteCollab() {
+    if (!currentCollabId) {
+        alert('Please select a collaboration first');
+        return;
+    }
+    
+    const modal = document.getElementById('deleteCollabModal');
+    if (modal) {
+        modal.style.display = 'block';
+    }
+}
+
+// Close delete collaboration modal
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteCollabModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Delete the current collaboration
+function deleteCollaboration() {
+    if (!currentCollabId) return;
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('collab_id', currentCollabId);
+    
+    // Disable the button during the request
+    const deleteBtn = document.querySelector('#deleteCollabModal .delete-btn');
+    if (deleteBtn) {
+        deleteBtn.disabled = true;
+        deleteBtn.textContent = 'Deleting...';
+    }
+    
+    // Send to server
+    fetch('delete_collab.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Close the modal
+            closeDeleteModal();
+            
+            // Show success message
+            alert('Collaboration deleted successfully');
+            
+            // Reload collaborations list
+            loadCollaborations();
+        } else {
+            alert('Error deleting collaboration: ' + data.error);
+            
+            // Re-enable button
+            if (deleteBtn) {
+                deleteBtn.disabled = false;
+                deleteBtn.textContent = 'Delete';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting collaboration:', error);
+        alert('Failed to delete collaboration: ' + error.message);
+        
+        // Re-enable button
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.textContent = 'Delete';
+        }
+    });
+}
+
+// Enhance switchCollab to also load members when a collaboration is selected
+const originalSwitchCollab = window.switchCollab;
+window.switchCollab = function(collabElement) {
+    // Call the original function
+    originalSwitchCollab(collabElement);
+    
+    // Load members after switching collaboration
+    if (document.getElementById('Members')) {
+        loadMembers();
+    }
+};
+
+// Add additional initialization code to the DOMContentLoaded event
+document.addEventListener('DOMContentLoaded', function() {
+    // Add tab event listeners for Members tab
+    const membersTab = document.querySelector('.tablinks[onclick*="Members"]');
+    if (membersTab) {
+        membersTab.addEventListener('click', function() {
+            loadMembers();
+        });
+    }
+    
+    // Close delete modal event handlers
+    const closeModalBtn = document.querySelector('#deleteCollabModal .close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closeDeleteModal);
+    }
+    
+    const cancelBtn = document.querySelector('#deleteCollabModal .cancel-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeDeleteModal);
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('deleteCollabModal');
+        if (event.target === modal) {
+            closeDeleteModal();
+        }
+    });
+});

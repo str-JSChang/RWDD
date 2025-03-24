@@ -57,7 +57,6 @@ echo "-->";
     }
 
     .user-info {
-        display: flex;
         align-items: center;
     }
 
@@ -114,6 +113,8 @@ echo "-->";
 <body>
     <?php include 'sidebar.php'; ?>
     
+<!-- The code is ugly, but i don't gives a shit. -->
+
     <!-- Main content -->
     <div class="main-content" id="mainContent" data-user-id="<?php echo isset($_SESSION['user_id']) ? htmlspecialchars($_SESSION['user_id']) : ''; ?>">
         <!-- Collaboration header -->
@@ -124,10 +125,14 @@ echo "-->";
                 <button class="tablinks active" onclick="openTab(event, 'Post')">
                     <span class="tab-icon">💬</span> Post
                 </button>
+                <button class="tablinks" onclick="openTab(event, 'Members')">
+                    <span class="tab-icon">👥</span> Members
+                </button>
             </div>
             
             <div class="collab-actions">
                 <button class="action-btn" title="Add member">👤</button>
+                <button class="action-btn" title="Delete collaboration" onclick="confirmDeleteCollab()">🗑️</button>
             </div>
         </div>
 
@@ -152,6 +157,16 @@ echo "-->";
                     <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload()">
                     <!-- Attachment preview container -->
                     <div id="attachmentsContainer" class="attachments-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="Members" class="tabcontent">
+            <div class="members-container">
+                <h2>Collaboration Members</h2>
+                <div class="members-list" id="membersList">
+                    <!-- Members will be loaded dynamically -->
+                    <div class="loading">Loading members...</div>
                 </div>
             </div>
         </div>
@@ -182,6 +197,19 @@ echo "-->";
             </div>
             <div id="memberSearchResults" class="search-results">
                 <!-- Search results will be displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete confirmation modal -->
+    <div id="deleteCollabModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Delete Collaboration</h2>
+            <p>Are you sure you want to delete this collaboration? This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="cancel-btn" onclick="closeDeleteModal()">Cancel</button>
+                <button class="delete-btn" onclick="deleteCollaboration()">Delete</button>
             </div>
         </div>
     </div>
@@ -332,7 +360,7 @@ echo "-->";
         }
         
         // Send to server
-        fetch('add_member.php', {
+        fetch('add_users.php', {
             method: 'POST',
             body: formData
         })

@@ -1,0 +1,28 @@
+[24-Mar-2025 06:28:36 UTC] POST data: Array
+(
+    [user_id] => 4
+    [collab_id] => 12
+    [role_id] => 2
+)
+
+[24-Mar-2025 06:28:36 UTC] SESSION data: Array
+(
+    [loggedin] => 1
+    [user_id] => 2
+    [username] => testuser
+)
+
+[24-Mar-2025 06:57:55 UTC] POST data: Array
+(
+    [user_id] => 4
+    [collab_id] => 14
+    [role_id] => 2
+)
+
+[24-Mar-2025 06:57:55 UTC] SESSION data: Array
+(
+    [loggedin] => 1
+    [user_id] => 2
+    [username] => testuser
+)
+

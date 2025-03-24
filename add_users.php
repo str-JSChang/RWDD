@@ -2,6 +2,14 @@
 session_start();
 require_once 'db_connect.php';
 
+ini_set('display_errors', 0); // Don't show errors in output
+ini_set('log_errors', 1);
+ini_set('error_log', 'member_errors.log'); // Create this file with write permissions
+
+// Log all variables at the beginning
+error_log('POST data: ' . print_r($_POST, true));
+error_log('SESSION data: ' . print_r($_SESSION, true));
+
 // Check if user is logged in
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     echo json_encode(['success' => false, 'error' => 'Not logged in']);
