@@ -1,0 +1,10 @@
+ProductNumber,ProductName,category,price,stocksAmount
+1, Classic Mango ,cake,RM43.00,4
+2, Blueberry Cheesecake ,cake,RM55.00,3
+3, Matcha Cake ,cake,RM57.00,2
+4, Chocolate Chips Cream Bun ,breads,RM3.00,10
+5, Corn Bun ,breads,RM2.00,13
+6, Mexico Bun ,breads,RM3.40,7
+7, Cranberry Biscuit ,snacks,RM5.00,55
+8, Meringue Cookie ,snacks,RM3.20,50
+9, Macaron ,snacks,RM6.00,20

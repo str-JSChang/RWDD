@@ -1,0 +1,22 @@
+[24-Mar-2025 01:59:59 UTC] [2025-03-24 01:59:59] POST Data: Array
+(
+    [collab_id] => 13
+    [message_text] => img
+)
+
+[24-Mar-2025 01:59:59 UTC] [2025-03-24 01:59:59] FILES Data: Array
+(
+    [attachment] => Array
+        (
+            [name] => IMG_2556.jpg
+            [full_path] => IMG_2556.jpg
+            [type] => 
+            [tmp_name] => 
+            [error] => 1
+            [size] => 0
+        )
+
+)
+
+[24-Mar-2025 01:59:59 UTC] [2025-03-24 01:59:59] File upload error: 1
+[24-Mar-2025 01:59:59 UTC] [2025-03-24 01:59:59] Message inserted successfully with ID: 27

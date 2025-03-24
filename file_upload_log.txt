@@ -1,2 +1,18 @@
 [24-Mar-2025 01:40:22 UTC] Message inserted successfully with ID: 23
 [24-Mar-2025 01:42:24 UTC] Message inserted successfully with ID: 24
+[24-Mar-2025 01:57:53 UTC] Message inserted successfully with ID: 25
+[24-Mar-2025 01:58:44 UTC] Message inserted successfully with ID: 26
+[24-Mar-2025 02:03:09 UTC] File upload detected: Array
+(
+    [name] => menu.csv
+    [full_path] => menu.csv
+    [type] => application/vnd.ms-excel
+    [tmp_name] => C:\wamp64\tmp\phpD2BD.tmp
+    [error] => 0
+    [size] => 371
+)
+
+[24-Mar-2025 02:03:09 UTC] Attempting to move uploaded file to: C:\wamp64\www\RWDD/uploads/1742781789_menu.csv
+[24-Mar-2025 02:03:09 UTC] File uploaded successfully to: C:\wamp64\www\RWDD/uploads/1742781789_menu.csv
+[24-Mar-2025 02:03:09 UTC] Message inserted successfully with ID: 28
+[24-Mar-2025 02:03:09 UTC] Attachment saved at: uploads/1742781789_menu.csv
